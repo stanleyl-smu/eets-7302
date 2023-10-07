@@ -1,0 +1,10 @@
+plugin: netbox.netbox.nb_inventory
+api_endpoint: http://172.16.6.100:8000
+token: 6a03b27d904ca22906293f14992c1331724e9669
+validate_certs: False
+group_by:
+  - device_roles
+  - manufacturers
+  - sites
+  - platforms
+  - tenants

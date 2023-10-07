@@ -1,0 +1,58 @@
+---
+- name: Backup Junos Router Configs
+  hosts: platforms_junos # run "ansible-inventory --list -i netbox_inv.yml -vvvvv" to gather the group name of hosts to be applied
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d-%H-%M-%S"
+      register: time_stamp
+
+    - name: gather junos routers' config
+      vars:
+        ansible_connection: local
+        playbook_config_dir: "./configs/"
+        ansible_network_os: junos
+      juniper.device.config:
+        retrieve: "committed"
+        diff: false
+        check: false
+        commit: false
+        dest: "{{ playbook_config_dir }}/{{ inventory_hostname }}-{{ time_stamp.stdout }}.config"
+      when: ansible_network_os == "junos"
+
+- name: Backup IOS-XE Router Configs
+  hosts: platforms_ios_xe # run "ansible-inventory --list -i netbox_inv.yml -vvvvv" to gather the group name of hosts to be applied
+  connection: network_cli
+  gather_facts: no
+  vars:
+    ansible_network_os: cisco.ios.ios
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d-%H-%M-%S"
+      register: time_stamp
+
+    - name: Gather IOS-XE Facts
+      cisco.ios.ios_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}-{{ time_stamp.stdout }}.config"
+          dir_path: "./configs/"
+
+- name: Backup IOS-XR Router Configs
+  hosts: platforms_ios_xr # run "ansible-inventory --list -i netbox_inv.yml -vvvvv" to gather the group name of hosts to be applied
+  connection: network_cli
+  gather_facts: no
+  vars:
+    ansible_network_os: cisco.iosxr.iosxr
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d-%H-%M-%S"
+      register: time_stamp
+
+    - name: Gather IOS-XR config
+      cisco.ios.ios_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}-{{ time_stamp.stdout }}.config"
+          dir_path: "./configs/"
