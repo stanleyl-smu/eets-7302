@@ -8,6 +8,8 @@ ansible-inventory --list -i netbox_inv.yml -vvv
 
 # Ansible modules installed:
 
+ansible-galaxy collection list
+
 Collection            Version
 --------------------- -------
 ansible.netcommon     5.2.0  
