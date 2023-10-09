@@ -1,0 +1,34 @@
+interfaces {
+    {{ interface.name }} {
+        unit {{ interface.unit }} {
+            family inet {
+                address {{ interface.ip }}/{{ interface.mask }};
+            }
+        }                               
+    }
+}
+routing-instances {     
+    {{ routing_instances.name }} {
+        instance-type vrf;
+        protocols {
+            bgp {
+                group {{ routing_instances.bgp.group_name }} {
+                    type external;
+                    neighbor {{ routing_instances.bgp.peer_ip }} {
+                        family inet {
+                            unicast;
+                        }
+                        peer-as {{ routing_instances.bgp.remote_asn }};
+                    }
+                }
+            }
+        }
+        interface {{ interface.name }}.{{ interface.unit }};
+        route-distinguisher {{ routing_instances.rd }};
+        vrf-target {
+            import target:{{ routing_instances.import_rt }};
+            export target:{{ routing_instances.export_rt }};
+        }
+        vrf-table-label;
+    }
+}

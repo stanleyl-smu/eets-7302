@@ -1,0 +1,18 @@
+vrf definition {{ vrf.name }}
+ rd {{ vrf.rd }}
+ !
+ address-family ipv4
+  route-target export {{ vrf.export_rt }}
+  route-target import {{ vrf.import_rt }}
+ exit-address-family
+!
+interface {{ interface.name }}.{{ interface.dot1q_tag }}
+ encapsulation dot1Q {{ interface.dot1q_tag }}
+ vrf forwarding {{ vrf.name }}
+ ip address {{ interface.ip }} {{ interface.subnet_mask }}
+!
+router bgp {{ bgp.local_asn }}
+ address-family ipv4 vrf {{ vrf.name }}
+  neighbor {{ bgp.peer_ip }} remote-as {{ bgp.remote_asn }}
+  neighbor {{ bgp.peer_ip }} activate
+ exit-address-family

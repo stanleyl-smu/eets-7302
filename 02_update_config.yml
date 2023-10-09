@@ -1,0 +1,100 @@
+---
+- name: Generate Junos CE router Configs
+  hosts: device_types_junos_ce
+  connection: local
+  gather_facts: no
+  vars:
+    candidate_config: "./candidate_configs/{{ inventory_hostname }}-{{ time_stamp.stdout }}.conf"
+
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d-%H-%M-%S"
+      register: time_stamp
+
+    - name: Write configuration file using jinja2
+      ansible.builtin.template:
+        src: "./j2_templates/CE1.j2"
+        dest: "{{ candidate_config }}"
+
+    - name: Load from a file on the Junos device.
+      juniper.device.config:
+        load: "merge"
+        src: "{{ candidate_config }}"
+      register: response
+
+    - name: Print the complete response.
+      debug:
+        var: response
+
+- name: Generate Junos PE router Configs
+  hosts: device_types_junos_pe
+  connection: local
+  gather_facts: no
+  vars:
+    candidate_config: "./candidate_configs/{{ inventory_hostname }}-{{ time_stamp.stdout }}.conf"
+
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d-%H-%M-%S"
+      register: time_stamp
+
+    - name: Write configuration file using jinja2
+      ansible.builtin.template:
+        src: "./j2_templates/PE1.j2"
+        dest: "{{ candidate_config }}"
+
+    - name: Load from a file on the Junos device.
+      juniper.device.config:
+        load: "merge"
+        src: "{{ candidate_config}}"
+      register: response
+
+    - name: Print the complete response.
+      debug:
+        var: response
+
+- name: Generate IOS-XE CE router Configs
+  hosts: device_types_iosxe_ce
+  connection: network_cli
+  gather_facts: no
+  vars:
+    candidate_config: "./candidate_configs/{{ inventory_hostname }}-{{ time_stamp.stdout }}.conf"
+    ansible_network_os: cisco.ios.ios
+
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d-%H-%M-%S"
+      register: time_stamp
+
+    - name: Write configuration file using jinja2
+      ansible.builtin.template:
+        src: "./j2_templates/CE2.j2"
+        dest: "{{ candidate_config }}"
+
+    - name: Apply configuration update
+      cisco.ios.ios_config:
+        src: "{{ candidate_config }}"
+        save_when: changed
+
+- name: Generate IOS-XE PE router Configs
+  hosts: device_types_iosxe_pe
+  connection: network_cli
+  gather_facts: no
+  vars:
+    candidate_config: "./candidate_configs/{{ inventory_hostname }}-{{ time_stamp.stdout }}.conf"
+    ansible_network_os: cisco.ios.ios
+
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d-%H-%M-%S"
+      register: time_stamp
+
+    - name: Write configuration file using jinja2
+      ansible.builtin.template:
+        src: "./j2_templates/PE2.j2"
+        dest: "{{ candidate_config }}"
+
+    - name: Apply configuration update
+      cisco.ios.ios_config:
+        src: "{{ candidate_config }}"
+        save_when: changed

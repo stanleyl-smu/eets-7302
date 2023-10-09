@@ -1,0 +1,15 @@
+---
+interface:
+  name: "ge-0/0/3"
+  unit: "0"
+  ip: "10.1.200.200"
+  mask: "24"
+policy:
+  name: "Customer2-BGP-EXPORT"
+  prefix: "10.1.200.200/24"
+routing_instances:
+  name: "Customer2"
+  router_id: "10.1.200.200"
+  local_asn: "65011"
+  remote_asn: "100"
+  peer_ip: "10.1.200.1"

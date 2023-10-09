@@ -1,0 +1,15 @@
+---
+interface:
+  name: "ge-0/0/3"
+  unit: "0"
+  ip: "10.1.200.1"
+  mask: "24"
+routing_instances:
+  name: "Customer2"
+  bgp:
+    group_name: "Customer2-EBGP"
+    peer_ip: "10.1.200.200"
+    remote_asn: "65011"
+  rd: "1.1.1.1:200"
+  import_rt: "200:1"
+  export_rt: "200:1"

@@ -1,0 +1,15 @@
+---
+vrf:
+  name: "Customer2"
+  rd: "3.3.3.3:200"
+  export_rt: "200:1"
+  import_rt: "200:1"
+interface:
+  name: "GigabitEthernet1"
+  dot1q_tag: "20"
+  ip: "10.3.201.3"
+  subnet_mask: "255.255.255.0"
+bgp:
+  local_asn: "100"
+  peer_ip: "10.3.201.201"
+  remote_asn: "65002"

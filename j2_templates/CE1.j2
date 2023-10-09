@@ -1,0 +1,41 @@
+interfaces {
+    {{ interface.name }} {
+        unit {{ interface.unit }} {
+            family inet {
+                address {{ interface.ip }}/{{ interface.mask }};
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement {{ policy.name }} {
+        from {
+            route-filter {{ policy.prefix }} exact;
+        }
+        then accept;
+    }
+}
+routing-instances {
+    {{ routing_instances.name }} {
+        instance-type virtual-router;
+        routing-options {
+            router-id {{ routing_instances.router_id }};
+            autonomous-system {{ routing_instances.local_asn }};
+        }
+        protocols {
+            bgp {
+                group EBGP {
+                    type external;
+                    neighbor {{ routing_instances.peer_ip }} {
+                        family inet {
+                            unicast;
+                        }
+                        export {{ policy.name }};
+                        peer-as {{ routing_instances.remote_asn }};
+                    }
+                }
+            }
+        }
+        interface {{ interface.name }}.{{ interface.unit }};
+    }
+}

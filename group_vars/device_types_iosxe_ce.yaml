@@ -1,0 +1,17 @@
+---
+vrf:
+  name: "Customer2"
+  rd: "3.3.3.3:200"
+interface:
+  name: "GigabitEthernet1"
+  dot1q_tag: "20"
+  ip: "10.3.201.201"
+  subnet_mask: "255.255.255.0"
+loopback:
+  name: "1"
+  ip: "10.0.0.201"
+  subnet_mask: "255.255.255.255"
+bgp:
+  local_asn: "65002"
+  peer_ip: "10.3.201.3"
+  remote_asn: "100"
