@@ -1,0 +1,236 @@
+﻿admin@PE1> show configuration | no-more 
+## Last commit: 2023-10-09 21:32:15 EDT by admin
+version 23.2R1.13;
+system {
+    host-name PE1;
+    root-authentication {
+        encrypted-password "$6$YN0FfiPG$IEQCRqNq0VLu0MLUn8PnoZMqz.3UZwY1HZFcuPiXlrGTq0Q/Ui48a0I/ZnULCH5wG/PBLWIyObLPRw7usEyAu."; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$6$.ewPeQRf$ce9HKOGGG2rk.3fJMeeBcTpbVqrNYy89r7p1yC4nukbPpA5xO7AYO.a44LC6iDD1x19KBY/w/FaqOuwSBxker."; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login allow;
+            protocol-version v2;
+        }
+        netconf {
+            ssh;
+        }
+    }
+    time-zone America/Toronto;
+    management-instance;
+    syslog {
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+}
+chassis {
+    network-services enhanced-ip;
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet {
+                address 10.1.2.1/24;
+            }
+            family mpls {
+                filter {
+                    input input_mpls;
+                    output output_mpls;
+                }
+            }
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet {
+                address 10.1.100.1/24;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 172.16.6.201/24;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 1.1.1.1/32;
+            }
+            family mpls;
+        }
+    }
+}
+policy-options {
+    policy-statement Next-Hop-Self {
+        from protocol bgp;
+        then {
+            next-hop self;
+        }
+    }
+}
+firewall {
+    family mpls {
+        filter input_mpls {
+            term 1 {
+                from {
+                    flexible-match-mask {
+                        match-start payload;
+                        byte-offset 12;
+                        bit-offset 0;
+                        bit-length 32;
+                        mask-in-hex 0xffffffff;
+                        prefix 0x0af9b354;
+                    }
+                }
+                then {
+                    count input_mpls1;
+                    accept;
+                }
+            }
+            term 2 {
+                from {
+                    flexible-match-mask {
+                        match-start payload;
+                        byte-offset 16;
+                        bit-offset 0;
+                        bit-length 32;
+                        mask-in-hex 0xffffffff;
+                        prefix 0x0af9b354;
+                    }
+                }
+                then {
+                    count input_mpls2;
+                    accept;
+                }
+            }
+            term 3 {
+                then accept;
+            }
+        }
+        filter output_mpls {
+            term 1 {
+                from {
+                    flexible-match-mask {
+                        match-start payload;
+                        byte-offset 12;
+                        bit-offset 0;
+                        bit-length 32;
+                        mask-in-hex 0xffffffff;
+                        prefix 0x0acb2183;
+                    }
+                }
+                then {
+                    count output_mpls1;
+                    accept;
+                }
+            }
+            term 2 {
+                from {
+                    flexible-match-mask {
+                        match-start payload;
+                        byte-offset 16;
+                        bit-offset 0;
+                        bit-length 32;
+                        mask-in-hex 0xffffffff;
+                        prefix 0x0acb2183;
+                    }
+                }
+                then {
+                    count output_mpls2;
+                    accept;
+                }
+            }
+            term 3 {
+                then accept;
+            }
+        }
+    }
+}
+routing-instances {
+    Customer1 {
+        instance-type vrf;
+        protocols {
+            bgp {
+                group Customer1-EBGP {
+                    type external;
+                    neighbor 10.1.100.100 {
+                        family inet {
+                            unicast;
+                        }
+                        peer-as 65001;
+                        local-as 100;
+                    }
+                }
+            }
+        }
+        interface ge-0/0/2.0;
+        route-distinguisher 1.1.1.1:100;
+        vrf-target {
+            import target:100:1;
+            export target:100:1;
+        }
+        vrf-table-label;
+    }
+    mgmt_junos {
+        routing-options {
+            static {
+                route 0.0.0.0/0 next-hop 172.16.6.1;
+            }
+        }
+    }
+}
+routing-options {
+    router-id 1.1.1.1;
+    autonomous-system 100;
+}
+protocols {
+    bgp {
+        group MPLS-BGP {
+            type internal;
+            local-as 100;
+            neighbor 3.3.3.3 {
+                family inet-vpn {
+                    unicast;
+                }
+                export Next-Hop-Self;
+                peer-as 100;
+            }
+        }
+    }
+    ldp {
+        interface ge-0/0/0.0;
+        interface lo0.0;
+    }
+    mpls {
+        interface ge-0/0/0.0;
+        interface lo0.0;
+    }
+    ospf {
+        area 0.0.0.0 {
+            interface ge-0/0/0.0 {
+                interface-type p2p;
+            }
+            interface lo0.0 {
+                interface-type p2p;
+                passive;
+            }
+        }
+    }
+}
+

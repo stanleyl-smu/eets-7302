@@ -1,0 +1,105 @@
+﻿admin@CE1> show configuration | no-more    
+## Last commit: 2023-10-09 21:32:08 EDT by admin
+version 23.2R1.13;
+system {
+    host-name CE1;
+    root-authentication {
+        encrypted-password "$6$3iyGe4kE$Z4/UNsOnpI4OJsvNzsGoUTRRjiam7diTYAdz9bljOyNEgQSSEPUfcADzZnL7LJ87/nYeIDgJZuijd0lulK7cs/"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$6$NpOoouRa$9KyG0njNmi7xOr1H96eO.zxO64zE/svnJu0yx/QldiY02FJk3bhWeSIGQtz1xjjUhT6Huhoo90EaI0ms.Hmez."; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login allow;
+            protocol-version v2;
+        }
+        netconf {
+            ssh;
+        }
+    }
+    time-zone America/Toronto;
+    management-instance;
+    syslog {
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+    }
+}
+chassis {
+    network-services enhanced-ip;
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0 {
+            family inet {
+                address 10.1.100.100/24;
+            }
+        }
+    }
+    fxp0 {
+        unit 0 {
+            family inet {
+                address 172.16.6.211/24;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.249.179.84/32;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement Customer1-BGP-EXPORT {
+        from {
+            route-filter 10.249.179.84/32 exact;
+        }
+        then accept;
+    }
+}
+routing-instances {
+    Customer1 {
+        instance-type virtual-router;
+        routing-options {
+            router-id 10.249.179.84;
+            autonomous-system 65001;
+        }
+        protocols {
+            bgp {
+                group EBGP {
+                    type external;
+                    neighbor 10.1.100.1 {
+                        family inet {
+                            unicast;
+                        }
+                        export Customer1-BGP-EXPORT;
+                        peer-as 100;
+                    }
+                }
+            }
+        }
+        interface ge-0/0/0.0;
+        interface lo0.0;
+    }
+    mgmt_junos {
+        routing-options {
+            static {
+                route 0.0.0.0/0 next-hop 172.16.6.1;
+            }
+        }
+    }
+}
+
