@@ -1,0 +1,29 @@
+---
+- name: Test connectivity from Junos CE1
+  hosts: device_types_junos_ce # run "ansible-inventory --list -i netbox_inv.yml -vvvvv" to gather the group name of hosts to be applied
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Ping to CE2
+      juniper.device.ping:
+        source: "10.1.200.200"
+        dest: "10.0.0.201"
+        routing_instance: "Customer2"
+      register: response
+    - name: Print out the ping result
+      debug:
+        var: response
+
+- name: Test connectivity from IOS-XE CE2
+  hosts: device_types_iosxe_ce # run "ansible-inventory --list -i netbox_inv.yml -vvvvv" to gather the group name of hosts to be applied
+  connection: network_cli
+  gather_facts: no
+  vars:
+    ansible_network_os: cisco.ios.ios
+  tasks:
+    - name: Ping to CE1
+      cisco.ios.ios_ping:
+        dest: "10.1.200.200"
+        source: "10.0.0.201"
+        vrf: "Customer2"
+        count: "5"
